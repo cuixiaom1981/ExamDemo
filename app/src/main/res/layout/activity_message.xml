@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_message"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context="com.example.lenovo.examdemo.Activity.MessageActivity">
+
+    <include layout="@layout/toolbar"></include>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="68dp"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    app:srcCompat="@mipmap/user_name" />
+
+                <EditText
+                    android:id="@+id/message_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="16dp"
+                    android:background="@null"
+                    android:hint="请输入学号"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="68dp"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    app:srcCompat="@mipmap/message_user" />
+
+                <TextView
+                    android:id="@+id/message_user"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="16dp"
+                    android:background="@null"
+                    android:hint="请输入手机号"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="68dp"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/pass1"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    app:srcCompat="@mipmap/login2" />
+
+                <EditText
+                    android:id="@+id/message_password"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/pass1"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="16dp"
+                    android:inputType="textPassword"
+                    android:background="@null"
+                    android:hint="请输入密码（6-16位数字字母组合）"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/iv_eye"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="8dp"
+                    app:srcCompat="@mipmap/login4"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="68dp"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/pass2"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    app:srcCompat="@mipmap/login2" />
+
+                <EditText
+                    android:id="@+id/message_password1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="16dp"
+                    android:layout_toRightOf="@+id/pass2"
+                    android:inputType="textPassword"
+                    android:background="@null"
+                    android:hint="请再次输入密码（6-16位数字字母组合）"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/iv_eye1"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="8dp"
+                    app:srcCompat="@mipmap/login4"/>
+
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/stu_mess"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#1296db"
+                android:text="完成"
+                android:textColor="#ffffff"
+                android:textSize="16sp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="70dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

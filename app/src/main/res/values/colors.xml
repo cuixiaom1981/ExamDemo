@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!-- toolbar颜色 -->
+    <color name="toolbarcolor">#ffa10f</color>
+    <!-- toolbar字体颜色 -->
+    <color name="toolbartextcolor">#ffffff</color>
+    <!-- 字体颜色 -->
+    <color name="textcolor">#4f4f4f</color>
+    <!-- 字体颜色 -->
+    <color name="textcolorlight">#7f7f7f</color>
+    <!-- 线颜色 -->
+    <color name="linecolor">#feeac7</color>
+    <!-- 主色 -->
+    <color name="maincolor">#ffa10f</color>
+    <!-- snackbar颜色 -->
+    <color name="snackbarcolor">#6ccdfa</color>
+    <!-- 背景色 -->
+    <color name="backgroundcolor">#f2f2f2</color>
+
+    <!-- 按钮背景色 -->
+    <color name="btnbackcolor">#1296db</color>
+
+    <color name="menu_bottom_text">#f2f8ff</color>
+
+    <color name="main_bg">#288df5</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="info_layout_bg">#eaeaea</color>
+    <color name="black_text">#FF18191A</color>
+    <!-- 答题 -->
+    <color name="practice_test_no_text">#2b89e9</color>
+    <color name="practice_test_content_text">#2f2f2f</color>
+    <color name="practice_test_result_text">#9a9a9a</color>
+    <color name="practice_test_result_right_text">#61bc31</color>
+    <color name="practice_test_result_wrong_text">#d53235</color>
+    <color name="practice_test_result_statistics_text">#2991f4</color>
+    <color name="practice_test_result_detail_text">#ab8b28</color>
+    <color name="my_error_question_text_black">#333333</color>
+
+    <color name="menu_item_back_pres_color">#2DD0CF</color>
+
+    <color name="jmui_jpush_blue">#2DD0CF</color>
+    <color name="btn_send_textcolor">@color/white</color>
+    <color name="chat_text_color">#0B1816</color>
+
+    <!-- 网络加载弹出窗色值 -->
+    <color name="triangle">#f867bc</color>
+    <color name="circle">#1296db</color>
+    <color name="rect">#ffa10f</color>
+    <color name="view_bg">#00000000</color>
+    <color name="shadow">#25808080</color>
+    <color name="dialog_bg">#f5f5f5</color>
+</resources>
