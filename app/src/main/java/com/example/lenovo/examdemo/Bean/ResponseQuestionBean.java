@@ -1,87 +1,65 @@
 package com.example.lenovo.examdemo.Bean;
 
-import java.util.List;
 
 public class ResponseQuestionBean {
-private List<String> queston;
-private List<String> a;
-private List<String> b;
-private List<String> c;
-private List<String> d;
-private List<String> rightAnswer;
-private List<String> questionId;
-private List<String> department;
-public List<String> getQuestion() {
-	return queston;
-}
-public void setQuestion(List<String> queston) {
-	this.queston = queston;
-}
-public List<String> getA() {
-	return a;
-}
-public void setA(List<String> a) {
-	a = a;
-}
-public List<String> getB() {
-	return b;
-}
-public void setB(List<String> b) {
-	b = b;
-}
-public List<String> getC() {
-	return c;
-}
-public void setC(List<String> c) {
-	c = c;
-}
-public List<String> getD() {
-	return d;
-}
-public void setD(List<String> d) {
-	d = d;
-}
-public List<String> getRightAnswer() {
-	return rightAnswer;
-}
-public void setRightAnswer(List<String> rightAnswer) {
-	this.rightAnswer = rightAnswer;
-}
-public List<String> getQuestionId() {
-	return questionId;
-}
-public void setQuestionId(List<String> questionId) {
-	this.questionId = questionId;
-}
-public List<String> getDepartment() {
-	return department;
-}
-public void setDepartment(List<String> department) {
-	this.department = department;
-}
-public ResponseQuestionBean(List<String> queston, List<String> a, List<String> b, List<String> c, List<String> d,
-		List<String> rightAnswer, List<String> questionId, List<String> department) {
-	super();
-	this.queston = queston;
-	this.a = a;
-	this.b = b;
-	this.c = c;
-	this.d = d;
-	this.rightAnswer = rightAnswer;
-	this.questionId = questionId;
-	this.department = department;
-}
-	public String toString() {
-		return "ResponseQuestionBean{" +
-				"question=" + queston +
-				", A=" + a +
-				", B=" + b +
-				", C=" + c +
-				", D=" + d +
-				", rightAnswer=" + rightAnswer +
-				", questionId=" + questionId +
-				", department=" + department +
-				'}';
+	private String question;
+	private String a;
+	private String b;
+	private String c;
+	private String d;
+	private String rightAnswer;
+	private int questionId;
+	public ResponseQuestionBean(String question, String a, String b, String c, String d, String rightAnswer, int questionId) {
+		super();
+		this.question = question;
+		a = a;
+		b = b;
+		c = c;
+		d = d;
+		this.rightAnswer = rightAnswer;
+		this.questionId = questionId;
+	}
+	public String getQuestion() {
+		return question;
+	}
+	public void setQuestion(String question) {
+		this.question = question;
+	}
+	public String getA() {
+		return a;
+	}
+	public void setA(String a) {
+		a = a;
+	}
+	public String getB() {
+		return b;
+	}
+	public void setB(String b) {
+		b = b;
+	}
+	public String getC() {
+		return c;
+	}
+	public void setC(String c) {
+		c = c;
+	}
+	public String getD() {
+		return d;
+	}
+	public void setD(String d) {
+		d = d;
+	}
+	public String getRightAnswer() {
+		return rightAnswer;
+	}
+	public void setRightAnswer(String rightAnswer) {
+		this.rightAnswer = rightAnswer;
+	}
+	public int getQuestionId() {
+		return questionId;
+	}
+	public void setQuestionId(int questionId) {
+		this.questionId = questionId;
 	}
 
 }

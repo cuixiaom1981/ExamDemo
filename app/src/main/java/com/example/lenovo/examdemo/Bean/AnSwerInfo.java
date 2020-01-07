@@ -3,7 +3,7 @@ package com.example.lenovo.examdemo.Bean;
 
 public class AnSwerInfo {
 
-	public String questionId; // 试题主键
+	public int questionId; // 试题主键
 	public String questionName; // 试题题目
 	public String QuestionFor; // （0模拟试题，1竞赛试题）
 	public String QuestionType; // 试题类型
@@ -18,10 +18,14 @@ public class AnSwerInfo {
 	public String option_type; // 是否是图片题0是1否
 	public String isSelect; // 是否选择0是1否
 	public String answer;//点击答案
-	public String getQuestionId() {
+	public String content; //题型描述
+	public String caseQuestion; //案例题案例
+	public String questionType; //区分案例题与视频题
+	public int perScore; //题型分值
+	public int getQuestionId() {
 		return questionId;
 	}
-	public void setQuestionId(String questionId) {
+	public void setQuestionId(int questionId) {
 		this.questionId = questionId;
 	}
 	public String getQuestionName() {
@@ -109,8 +113,36 @@ public class AnSwerInfo {
 	public String getAnswer() {
 		return answer;
 	}
-
 	public void setAnswer(String answer) {
 		this.answer = answer;
 	}
+
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public String getCaseQuestion() {
+		return caseQuestion;
+	}
+	public void setCaseQuestion(String caseQuestion) {
+		this.caseQuestion = caseQuestion;
+	}
+
+	public int getPerScore() {
+		return perScore;
+	}
+	public void setPerScore(int perScore) {
+		this.perScore = perScore;
+	}
+
+	public String getquestionType() {
+		return questionType;
+	}
+	public void setquestionType(String questionType) {
+		this.questionType = questionType;
+	}
+
 }

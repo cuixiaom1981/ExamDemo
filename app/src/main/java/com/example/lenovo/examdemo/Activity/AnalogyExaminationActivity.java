@@ -28,12 +28,13 @@ import com.example.lenovo.examdemo.Api.RequestApi;
 import com.example.lenovo.examdemo.Bean.AnSwerInfo;
 import com.example.lenovo.examdemo.Bean.RequestAnswerBean;
 import com.example.lenovo.examdemo.Bean.ResponseBean;
+import com.example.lenovo.examdemo.Bean.ResponsePaperBean;
 import com.example.lenovo.examdemo.Bean.ResponseQuestionBean;
 import com.example.lenovo.examdemo.Bean.StuBean;
 import com.example.lenovo.examdemo.Bean.TokenBean;
 import com.example.lenovo.examdemo.R;
 import com.example.lenovo.examdemo.Utils.ConstantData;
-import com.example.lenovo.examdemo.Utils.PublicStatic;
+import com.example.lenovo.examdemo.Utils.RetrofitManager;
 import com.example.lenovo.examdemo.Utils.ViewPagerScroller;
 import com.example.lenovo.examdemo.View.VoteSubmitViewPager;
 import com.google.gson.Gson;
@@ -41,23 +42,16 @@ import com.google.gson.Gson;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.OkHttpClient;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
@@ -68,10 +62,7 @@ public class AnalogyExaminationActivity extends Activity {
 	private ImageView leftIv;
 	private TextView titleTv;
 	private TextView right;
-	private List<String> department = new ArrayList<String>();
-	private String title = "";
-	public String stuid ="";
-	public String token = "";
+	public String exam = "";
 
 	VoteSubmitViewPager viewPager;
 	ExaminationSubmitAdapter pagerAdapter;
@@ -81,9 +72,7 @@ public class AnalogyExaminationActivity extends Activity {
 	public int score = 0; //成绩
 	private String errorMsg="";
 	public List<String> questionId = new ArrayList<String>();
-//	public List<String> resultlist = new ArrayList<String>();
-	//服务器base地址
-	public String BASE_URL = PublicStatic.SERVICE_HOST.concat(PublicStatic.API_URL);
+	public List<Integer> isRight = new ArrayList<Integer>();
 	private RequestApi apiService;
 
 	//接口取消订阅
@@ -100,31 +89,6 @@ public class AnalogyExaminationActivity extends Activity {
 	boolean isPause = false;
 	int isFirst;
 
-
-//	private Handler handlerSubmit = new Handler(){
-//		@Override
-//		public void handleMessage(Message msg) {
-//			// TODO Auto-generated method stub
-//			super.handleMessage(msg);
-//
-//			switch (msg.what) {
-//			case 1:
-//				showSubmitDialog();
-//				new Handler().postDelayed(new Runnable() {
-//
-//					@Override
-//					public void run() {
-//						builderSubmit.dismiss();
-//						finish();
-//					}
-//				}, 3000);
-//				break;
-//			default:
-//				break;
-//			}
-//
-//		}
-//	};
 
 	Handler handlerTime = new Handler() {
 		public void handleMessage(Message msg) {
@@ -143,7 +107,7 @@ public class AnalogyExaminationActivity extends Activity {
 						uploadExamination();
 						List<String> valuesList = new ArrayList<String>(resultlist.values());
 //						Toast.makeText(AnalogyExaminationActivity.this, valuesList.toString(), Toast.LENGTH_LONG).show();
-						toUpload(token,RequestAnswerBean.toUpload(valuesList,ConstantData.answerId,stuid,score));
+						toUpload(RequestAnswerBean.toUpload(valuesList,ConstantData.answerId,isRight,ConstantData.stuid,exam,score));
 					}
 					right.setText("00:00");
 					if (timer != null) {
@@ -215,7 +179,7 @@ public class AnalogyExaminationActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_practice_test);
 		initView();
-		getQuestion(new StuBean(stuid));
+		getQuestion(exam);
 		loadData();
 
 	}
@@ -230,12 +194,10 @@ public class AnalogyExaminationActivity extends Activity {
 		drawable1.setBounds(0, 0, drawable1.getMinimumWidth(),
 				drawable1.getMinimumHeight());
 		Intent intent = getIntent();
-		stuid = intent.getExtras().getString("id");
-//		stuid = "2015157011";
-		token = intent.getExtras().getString("token");
-//		token = "eyJhbGciOiJIUzUxMiJ9.eyJtb2RlIjoicGFzc3dvcmQiLCJzdWIiOiIxODk0NjEwNDAzMiIsImlzcyI6ImN1aSIsImV4cCI6MTU3MjkyMzE5OSwiaWF0IjoxNTcyMzE4Mzk5LCJyb2wiOiJQQSJ9.BW_ryOZVFFd57rl3WDRCz2E0Wd0lAjMxAE2AXaB5hRzDzrCPpINQJuuh-iot2fLywyx_hP7rW6AZom1ffqrUJg";
+		exam = intent.getStringExtra("exam_name");
 		right.setCompoundDrawables(drawable1, null, null, null);
 		right.setText("15:00");
+		titleTv.setText(exam);
 		viewPager = (VoteSubmitViewPager) findViewById(R.id.vote_submit_viewpager);
 		leftIv.setOnClickListener(new OnClickListener() {
 
@@ -251,29 +213,11 @@ public class AnalogyExaminationActivity extends Activity {
 		});
 		
 		initViewPagerScroll();
-		apiService = initRetrofit1().create(RequestApi.class);
+		apiService = RetrofitManager.getInstance().getRetrofit();
 
-		this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE );
+//		this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE );   //防止截屏
 	}
 
-	//初始化retrofit 集成rxjava
-	public  Retrofit initRetrofit1(){
-		//http设置，可添加拦截器是实现http参数统一配置
-		OkHttpClient.Builder builder = new OkHttpClient.Builder();
-		builder.connectTimeout(3000, TimeUnit.SECONDS);//连接 超时时间
-		builder.writeTimeout(3000,TimeUnit.SECONDS);//写操作 超时时间
-		builder.readTimeout(3000,TimeUnit.SECONDS);//读操作 超时时间
-		builder.retryOnConnectionFailure(true);//错误重连
-
-		Retrofit retrofit = new Retrofit.Builder()
-				.baseUrl(BASE_URL)
-				.client(builder.build())
-				//添加rxjava支持
-				.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-				.addConverterFactory(GsonConverterFactory.create())
-				.build();
-		return retrofit;
-	}
 
 	private void loadData(){
 		for (int i = 0; i < ConstantData.answerName.size(); i++) {
@@ -285,6 +229,10 @@ public class AnalogyExaminationActivity extends Activity {
 			info.setOptionC(ConstantData.answerOptionC.get(i));// 试题选项C
 		    info.setOptionD(ConstantData.answerOptionD.get(i));// 试题选项D
 			info.setRightAnswer(ConstantData.rightAnswer.get(i));//试题正确答案
+			info.setContent(ConstantData.Content.get(i));//题型描述
+			info.setCaseQuestion(ConstantData.caseQuestion.get(i));//案例题案例
+			info.setPerScore(ConstantData.perScore.get(i));//题型分值
+			info.setquestionType(ConstantData.questionType.get(i));//案例题类型
 		    info.setOption_type("0");
 		    dataItems.add(info);
 		    for (int j = 0; j < dataItems.size();j++){
@@ -342,7 +290,16 @@ public class AnalogyExaminationActivity extends Activity {
 			mCompositeDisposable = null;
 		}
 		super.onDestroy();
+		pagerAdapter.getVideo().resetPlayer();
 	}
+
+//	@Override
+//	protected void onStop() {
+//		super.onStop();
+//		pagerAdapter.getVideo().resetPlayer();
+//	}
+
+
 
 	// 保存题号答案、计算所得成绩
 	public void uploadExamination() {
@@ -350,11 +307,14 @@ public class AnalogyExaminationActivity extends Activity {
 			for (int i = 0; i < dataItems.size(); i++) {
 				if (resultlist.get(i) == (null)) {
 					score += 0;
+					isRight.add(0);
 				} else {
 					if (resultlist.get(i).equals(dataItems.get(i).getRightAnswer())) {
 						score += 5;
+						isRight.add(1);
 					} else {
 						score += 0;
+						isRight.add(0);
 					}
 				}
 			}
@@ -516,40 +476,66 @@ public class AnalogyExaminationActivity extends Activity {
 	}
 
 	//获取试题内容接口
-	public void getQuestion(StuBean stu){
-		//3.新rxjava接口服务对象调用接口中方法
-		// apiService = initRetrofit1().create(RequestApi.class);
-		Gson gson=new Gson();
-		//通过gson转换成json字符串,调用login接口请求
-		//token为本地保存的token
-		apiService.getQuestion(gson.toJson(stu),token).
+	public void getQuestion(String examName){
+		apiService.getPaper(examName).
 				subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
-				.subscribe( new Observer<ResponseBean<ResponseQuestionBean>>(){
+				.subscribe( new Observer<ResponseBean<ResponsePaperBean>>(){
 					@Override
 					public void onSubscribe(Disposable d) {
 						disposeableAdd(d);
 					}
 					@Override
-					public void onNext(ResponseBean<ResponseQuestionBean> resResult) {
+					public void onNext(ResponseBean<ResponsePaperBean> resResult) {
 						if (resResult.getResult()!=0){
-							Toast.makeText(AnalogyExaminationActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
+								Toast.makeText(AnalogyExaminationActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
 						}else {
-						for (int i = 0; i < resResult.getData().getQuestion().size(); i++) {
-							ConstantData.answerName.add(resResult.getData().getQuestion().get(i));
-							ConstantData.answerOptionA.add(resResult.getData().getA().get(i));
-							ConstantData.answerOptionB.add(resResult.getData().getB().get(i));
-							ConstantData.answerOptionC.add(resResult.getData().getC().get(i));
-							ConstantData.answerOptionD.add(resResult.getData().getD().get(i));
-							ConstantData.rightAnswer.add(resResult.getData().getRightAnswer().get(i));
-							ConstantData.answerId.add(resResult.getData().getQuestionId().get(i));
-						}for (int i = 0; i < resResult.getData().getDepartment().size(); i++){
-							department.add(resResult.getData().getDepartment().get(i));
-						}
-						for (int i = 0;i<department.size();i++){
-							title = title+department.get(i)+" ";
-						}
-						titleTv.setText(title);
+							if (resResult.getData().getSelect() != null){
+								for (int i = 0; i < resResult.getData().getSelect().getQuestions().size(); i++) {
+									ConstantData.answerName.add(resResult.getData().getSelect().getQuestions().get(i).getQuestion());
+									ConstantData.answerOptionA.add(resResult.getData().getSelect().getQuestions().get(i).getA());
+									ConstantData.answerOptionB.add(resResult.getData().getSelect().getQuestions().get(i).getB());
+									ConstantData.answerOptionC.add(resResult.getData().getSelect().getQuestions().get(i).getC());
+									ConstantData.answerOptionD.add(resResult.getData().getSelect().getQuestions().get(i).getD());
+									ConstantData.rightAnswer.add(resResult.getData().getSelect().getQuestions().get(i).getRightAnswer());
+									ConstantData.answerId.add(resResult.getData().getSelect().getQuestions().get(i).getQuestionId());
+									ConstantData.caseQuestion.add(null);   //存入选择题时，案例题案例一直add null
+									ConstantData.questionType.add(null);
+									if (i == 0){
+										ConstantData.Content.add(resResult.getData().getSelect().getIntroduce());
+										ConstantData.perScore.add(resResult.getData().getSelect().getPerScoer());
+									}else {
+										ConstantData.Content.add(null);
+										ConstantData.perScore.add(0);
+									}
+								}
+							}
+							if(resResult.getData().getCaseQuestions().size() != 0){
+								for(int i = 0; i < resResult.getData().getCaseQuestions().size(); i++){
+									ConstantData.Content.add(resResult.getData().getCaseQuestions().get(i).getIntroduce());
+									ConstantData.caseQuestion.add(resResult.getData().getCaseQuestions().get(i).getQuestion());
+									ConstantData.perScore.add(resResult.getData().getCaseQuestions().get(i).getPerScore());
+									ConstantData.questionType.add(resResult.getData().getCaseQuestions().get(i).getQuestionType());
+									for(int j = 0; j < resResult.getData().getCaseQuestions().get(i).getQuestions().size(); j++){
+
+										ConstantData.answerName.add(resResult.getData().getCaseQuestions().get(i).getQuestions().get(j).getQuestion());
+										ConstantData.answerOptionA.add(resResult.getData().getCaseQuestions().get(i).getQuestions().get(j).getA());
+										ConstantData.answerOptionB.add(resResult.getData().getCaseQuestions().get(i).getQuestions().get(j).getB());
+										ConstantData.answerOptionC.add(resResult.getData().getCaseQuestions().get(i).getQuestions().get(j).getC());
+										ConstantData.answerOptionD.add(resResult.getData().getCaseQuestions().get(i).getQuestions().get(j).getD());
+										ConstantData.rightAnswer.add(resResult.getData().getCaseQuestions().get(i).getQuestions().get(j).getRightAnswer());
+										ConstantData.answerId.add(resResult.getData().getCaseQuestions().get(i).getQuestions().get(j).getQuestionId());
+										if (j > 0){
+											ConstantData.Content.add(null);    //每个案例对应多道选择题，存入一个案例其他position对应存入null
+											ConstantData.caseQuestion.add(null);
+											ConstantData.questionType.add(null);
+											ConstantData.perScore.add(0);
+										}
+									}
+								}
+
+							}
+
 						loadData();
 						}
 					}
@@ -568,20 +554,20 @@ public class AnalogyExaminationActivity extends Activity {
 
 	}
 	//提交答案
-	public void toUpload(String token, RequestAnswerBean toload) {
+	public void toUpload(RequestAnswerBean toload) {
 		Gson gson = new Gson();
 		//通过gson转换成json字符串,调用login接口请求
-		apiService.upload(token,gson.toJson(toload)).
+		apiService.upload(gson.toJson(toload)).
 				subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
-				.subscribe(new Observer<ResponseBean<TokenBean>>() {
+				.subscribe(new Observer<ResponseBean>() {
 					@Override
 					public void onSubscribe(Disposable d) {
 						disposeableAdd(d);
 					}
 
 					@Override
-					public void onNext(ResponseBean<TokenBean> resResult) {
+					public void onNext(ResponseBean resResult) {
 						if (resResult.getResult()!=0){
 							Toast.makeText(AnalogyExaminationActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
 						}else {
@@ -598,7 +584,7 @@ public class AnalogyExaminationActivity extends Activity {
 
 								@Override
 								public void onClick(DialogInterface dialogInterface, int i) {
-									Intent intent = new Intent(AnalogyExaminationActivity.this,LoginActivity.class);
+									Intent intent = new Intent(AnalogyExaminationActivity.this,LocalActivity.class);
 									startActivity(intent);
 								}
 							});

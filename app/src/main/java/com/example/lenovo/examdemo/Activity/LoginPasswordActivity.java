@@ -6,7 +6,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -16,38 +15,28 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.lenovo.examdemo.Api.RequestApi;
+import com.example.lenovo.examdemo.Bean.BaseObserver;
 import com.example.lenovo.examdemo.Bean.GoLoginBean;
-import com.example.lenovo.examdemo.Bean.GoTimeBean;
+import com.example.lenovo.examdemo.Bean.ProgressListener;
 import com.example.lenovo.examdemo.Bean.ResponseBean;
-import com.example.lenovo.examdemo.Bean.TimeBean;
+import com.example.lenovo.examdemo.Bean.ResponseCallBack;
 import com.example.lenovo.examdemo.Bean.TokenBean;
 import com.example.lenovo.examdemo.R;
-import com.example.lenovo.examdemo.Utils.PublicStatic;
+import com.example.lenovo.examdemo.Utils.ConstantData;
+import com.example.lenovo.examdemo.Utils.RetrofitManager;
 import com.google.gson.Gson;
 
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.OkHttpClient;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginPasswordActivity extends AppCompatActivity {
-    private EditText et_num,et_password;
+    private EditText et_num, et_password;
     private TextView tv_login_sms;
     private ImageView iv_eye;
     private Button bt_login;
     private String telRegex = "[1][34578]\\d{9}";// 手机号正则表达式
     private String pasRegex = "^[a-zA-Z0-9]{6,16}$";// 密码正则表达式
     private int i = 0;
-    private String token = "";
-    private String stuid = "";
-    //服务器base地址
-    public String BASE_URL = PublicStatic.SERVICE_HOST.concat(PublicStatic.API_URL);
     private RequestApi apiService;
 
     @Override
@@ -59,24 +48,6 @@ public class LoginPasswordActivity extends AppCompatActivity {
         initView();
     }
 
-    //初始化retrofit 集成rxjava
-    public Retrofit initRetrofit(){
-        //http设置，可添加拦截器是实现http参数统一配置
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(3000, TimeUnit.SECONDS);//连接 超时时间
-        builder.writeTimeout(3000,TimeUnit.SECONDS);//写操作 超时时间
-        builder.readTimeout(3000,TimeUnit.SECONDS);//读操作 超时时间
-        builder.retryOnConnectionFailure(true);//错误重连
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .client(builder.build())
-                //添加rxjava支持
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        return retrofit;
-    }
     private void initView() {
         et_num = (EditText) findViewById(R.id.et_num);
         et_password = (EditText) findViewById(R.id.et_password);
@@ -106,7 +77,7 @@ public class LoginPasswordActivity extends AppCompatActivity {
                 } else {
                     String phone = et_num.getText().toString();
                     String password = et_password.getText().toString();
-                    login(GoLoginBean.passLoginBean(phone,password));
+                    login(GoLoginBean.passLoginBean(phone, password));
                 }
 
             }
@@ -118,11 +89,11 @@ public class LoginPasswordActivity extends AppCompatActivity {
 //                Toast.makeText(LoginPasswordActivity.this, "请使用验证码登录，完成后可在信息管理界面修改密码", Toast.LENGTH_LONG).show();
 //            }
 //        });
-        tv_login_sms = (TextView)findViewById(R.id.tv_login_sms);
+        tv_login_sms = (TextView) findViewById(R.id.tv_login_sms);
         tv_login_sms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginPasswordActivity.this,LoginActivity.class);
+                Intent intent = new Intent(LoginPasswordActivity.this, LoginActivity.class);
                 startActivity(intent);
             }
         });
@@ -139,6 +110,7 @@ public class LoginPasswordActivity extends AppCompatActivity {
         this.setSupportActionBar(toolbar);// 添加标题栏
         this.getSupportActionBar().setDisplayHomeAsUpEnabled(true);// 设置返回键可点击
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -152,84 +124,47 @@ public class LoginPasswordActivity extends AppCompatActivity {
     }
 
     public void login(GoLoginBean user) {
-        apiService = initRetrofit().create(RequestApi.class);
+        apiService = RetrofitManager.getInstance().getRetrofit();
         Gson gson = new Gson();
         //通过gson转换成json字符串,调用login接口请求
         apiService.login(gson.toJson(user)).
                 subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ResponseBean<TokenBean>>() {
+                .subscribe(new BaseObserver<ResponseBean<TokenBean>>(new ResponseCallBack<ResponseBean<TokenBean>>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-                    @Override
-                    public void onNext(ResponseBean<TokenBean> resResult) {
-                        if (resResult.getResult()!=0){
-                            Toast.makeText(LoginPasswordActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
-                        }else {
-//                            Toast.makeText(LoginPasswordActivity.this, resResult.getData().getToken(), Toast.LENGTH_LONG).show();
-                            token = resResult.getData().getToken();
-                            stuid = resResult.getData().getStuId();
-                            Time(GoTimeBean.getTimeBean(stuid));
+                    public void onSuccess(ResponseBean<TokenBean> resResult) {
+                        if (resResult.getResult() != 0) {
+                            Toast.makeText(LoginPasswordActivity.this, resResult.getErrMsg() + "", Toast.LENGTH_LONG).show();
+                        } else {
+                            ConstantData.token = resResult.getData().getToken();
+                            ConstantData.stuid = resResult.getData().getStuId();
+                            Intent intent = new Intent(LoginPasswordActivity.this, LocalActivity.class);
+                            startActivity(intent);
                         }
                     }
+
                     @Override
-                    public void onError(Throwable e) {
-                        Log.e("login", "onFailure: " + e.getMessage());
+                    public void onLogin() {
+                        Intent intent = new Intent(LoginPasswordActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        Toast.makeText(getApplicationContext(), "请重新登录", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
-                    public void onComplete() {
-                    }
+                    public void onFault(String errorMsg) {
+                        Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
 
-                });
-    }
-    //获取倒计时接口
-    public void Time(GoTimeBean time) {
-        apiService = initRetrofit().create(RequestApi.class);
-        Gson gson = new Gson();
-        //通过gson转换成json字符串,调用login接口请求
-        apiService.getTime(gson.toJson(time)).
-                subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ResponseBean<TimeBean>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
                     }
+                }, new ProgressListener() {
                     @Override
-                    public void onNext(ResponseBean<TimeBean> resResult) {
-                        if (resResult.getResult()!=0){
-                            Toast.makeText(LoginPasswordActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
-                        }else {
-                            if (resResult.getData().getSubmit()) {
-                                Toast.makeText(LoginPasswordActivity.this, "您已提交试卷", Toast.LENGTH_LONG).show();
-                            } else {
-                                int time = (int) resResult.getData().getDuring() / 60;
-                                if (time > 0) {
-                                    Intent intent = new Intent(LoginPasswordActivity.this, WaitingActivity.class);
-                                    intent.putExtra("id", stuid);
-                                    intent.putExtra("token", token);
-                                    startActivity(intent);
-                                } else if (time <= 0 && time > -60) {
-                                    Intent intent = new Intent(LoginPasswordActivity.this, AnalogyExaminationActivity.class);
-                                    intent.putExtra("id", stuid);
-                                    intent.putExtra("token", token);
-                                    startActivity(intent);
-                                } else if (time < -90) {
-                                    Toast.makeText(LoginPasswordActivity.this, "考试已结束", Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        }
-                    }
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("login", "onFailure: " + e.getMessage());
+                    public void startProgress() {
+                        Toast.makeText(getApplicationContext(), "登录中", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
-                    public void onComplete() {
+                    public void cancelProgress() {
+                        // Toast.makeText(getApplicationContext(), "获取倒计时已取消", Toast.LENGTH_LONG).show();
                     }
-
-                });
+                }));
     }
 }

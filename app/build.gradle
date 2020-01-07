@@ -5,7 +5,7 @@ android {
     buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "com.example.lenovo.examdemo"
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -26,11 +26,15 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     compile group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.8'
     compile group: 'io.reactivex.rxjava2', name: 'rxandroid', version: '2.0.2'
-    compile 'com.squareup.retrofit2:retrofit:2.4.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.4.0'
-    compile 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
-    compile 'com.android.support:design:25.3.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
+    implementation 'com.android.support:design:25.3.0'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    compile 'org.java-websocket:Java-WebSocket:1.4.0'
+    implementation 'org.java-websocket:Java-WebSocket:1.4.0'
+    compile(name: 'LiteAVSDK_Player', ext: 'aar')
+    compile(name: 'libsuperplayer', ext: 'aar')
+// 超级播放器弹幕集成的第三方库
+    implementation 'com.github.ctiao:DanmakuFlameMaster:0.5.3'
 }

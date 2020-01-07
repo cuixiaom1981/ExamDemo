@@ -150,6 +150,38 @@
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:textSize="16sp"
+            android:textColor="@color/practice_test_content_text"
+            android:layout_marginLeft="8dp"
+            android:hint="题目描述题目描述题目描述题目描述题目描述题目描述题目描述题目描述题目描述"
+            android:visibility="visible">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/caseQuestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:padding="10dp"
+            android:textSize="16sp"
+            android:textColor="@color/practice_test_content_text"
+            android:hint="案例题案例案例题案例案例题案例案例题案例案例题案例案例题案例案例题案例"
+            android:visibility="visible">
+        </TextView>
+
+        <com.tencent.liteav.demo.play.SuperPlayerView
+            android:id="@+id/videoView"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:visibility="gone"
+            />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -210,16 +242,7 @@
                     android:textColor="@color/practice_test_result_text" 
                     />
                 
-                <ImageView
-                    android:id="@+id/vote_submit_select_image_a_"
-                    android:layout_width="150dip"
-                    android:layout_height="75dip"
-                    android:src="@drawable/ic_practice_test_normal" 
-                    android:visibility="gone"
-                    android:layout_marginLeft="8dp"
-                    android:scaleType="fitXY"
-                    />
-                
+
             </LinearLayout>
             
             <LinearLayout
@@ -246,15 +269,6 @@
                     android:textSize="16sp"
                     android:textColor="@color/practice_test_result_text" />
                 
-                <ImageView
-                    android:id="@+id/vote_submit_select_image_b_"
-                    android:layout_width="150dip"
-                    android:layout_height="75dip"
-                    android:src="@drawable/ic_practice_test_normal" 
-                    android:visibility="gone"
-                    android:layout_marginLeft="8dp"
-                    android:scaleType="fitXY"
-                    />
             </LinearLayout>
             
             <LinearLayout
@@ -280,15 +294,6 @@
                     android:text="您给出的回答选项？"
                     android:textSize="16sp"
                     android:textColor="@color/practice_test_result_text" />
-                <ImageView
-                    android:id="@+id/vote_submit_select_image_c_"
-                    android:layout_width="150dip"
-                    android:layout_height="75dip"
-                    android:src="@drawable/ic_practice_test_normal" 
-                    android:visibility="gone"
-                    android:layout_marginLeft="8dp"
-                    android:scaleType="fitXY"
-                    />
             </LinearLayout>
             
             <LinearLayout
@@ -314,14 +319,6 @@
                     android:text="您给出的回答选项？"
                     android:textSize="16sp"
                     android:textColor="@color/practice_test_result_text" />
-                <ImageView
-                    android:id="@+id/vote_submit_select_image_d_"
-                    android:layout_width="150dip"
-                    android:layout_height="75dip"
-                    android:src="@drawable/ic_practice_test_normal" 
-                    android:visibility="gone"
-                    android:layout_marginLeft="8dp"
-                    android:scaleType="fitXY"
                     />
             </LinearLayout>
 

@@ -28,6 +28,9 @@ import com.example.lenovo.examdemo.Database.DBManager;
 import com.example.lenovo.examdemo.R;
 import com.example.lenovo.examdemo.Utils.ConstantData;
 import com.example.lenovo.examdemo.Utils.ConstantUtil;
+import com.tencent.liteav.demo.play.SuperPlayerModel;
+import com.tencent.liteav.demo.play.SuperPlayerView;
+import com.tencent.liteav.demo.play.v3.SuperPlayerVideoId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,11 +104,9 @@ public class ExaminationSubmitAdapter extends PagerAdapter {
         holder.tvC = (TextView) convertView.findViewById(R.id.vote_submit_select_text_c);
         holder.tvD = (TextView) convertView.findViewById(R.id.vote_submit_select_text_d);
         holder.tvE = (TextView) convertView.findViewById(R.id.vote_submit_select_text_e);
-        holder.ivA_ = (ImageView) convertView.findViewById(R.id.vote_submit_select_image_a_);
-        holder.ivB_ = (ImageView) convertView.findViewById(R.id.vote_submit_select_image_b_);
-        holder.ivC_ = (ImageView) convertView.findViewById(R.id.vote_submit_select_image_c_);
-        holder.ivD_ = (ImageView) convertView.findViewById(R.id.vote_submit_select_image_d_);
-        holder.ivE_ = (ImageView) convertView.findViewById(R.id.vote_submit_select_image_e_);
+        holder.content = (TextView) convertView.findViewById(R.id.content);
+        holder.caseQuestion = (TextView) convertView.findViewById(R.id.caseQuestion);
+        holder.mSuperPlayerView = (SuperPlayerView) convertView.findViewById(R.id.videoView);
 
         holder.totalText.setText(position + 1 + "/" + dataItems.size());
 
@@ -151,30 +152,25 @@ public class ExaminationSubmitAdapter extends PagerAdapter {
             }
         });
 
-        if (dataItems.get(position).getOptionA().equals("")) {
-            holder.layoutA.setVisibility(View.GONE);
-        }
-        if (dataItems.get(position).getOptionB().equals("")) {
-            holder.layoutB.setVisibility(View.GONE);
-        }
-        if (dataItems.get(position).getOptionC().equals("")) {
-            holder.layoutC.setVisibility(View.GONE);
-        }
-        if (dataItems.get(position).getOptionD().equals("")) {
-            holder.layoutD.setVisibility(View.GONE);
-        }
-        if (dataItems.get(position).getOptionA().equals("") && dataItems.get(position).getOptionB().equals("") && dataItems.get(position).getOptionC().equals("") && dataItems.get(position).getOptionD().equals("")) {
-            holder.layoutA.setVisibility(View.GONE);
-            holder.layoutB.setVisibility(View.GONE);
-            holder.layoutC.setVisibility(View.GONE);
-            holder.layoutD.setVisibility(View.GONE);
-            holder.edit.setVisibility(View.VISIBLE);
-        }
-        //文字题目
-        holder.ivA_.setVisibility(View.GONE);
-        holder.ivB_.setVisibility(View.GONE);
-        holder.ivC_.setVisibility(View.GONE);
-        holder.ivD_.setVisibility(View.GONE);
+//        if (dataItems.get(position).getOptionA().equals("")) {
+//            holder.layoutA.setVisibility(View.GONE);
+//        }
+//        if (dataItems.get(position).getOptionB().equals("")) {
+//            holder.layoutB.setVisibility(View.GONE);
+//        }
+//        if (dataItems.get(position).getOptionC().equals("")) {
+//            holder.layoutC.setVisibility(View.GONE);
+//        }
+//        if (dataItems.get(position).getOptionD().equals("")) {
+//            holder.layoutD.setVisibility(View.GONE);
+//        }
+//        if (dataItems.get(position).getOptionA().equals("") && dataItems.get(position).getOptionB().equals("") && dataItems.get(position).getOptionC().equals("") && dataItems.get(position).getOptionD().equals("")) {
+//            holder.layoutA.setVisibility(View.GONE);
+//            holder.layoutB.setVisibility(View.GONE);
+//            holder.layoutC.setVisibility(View.GONE);
+//            holder.layoutD.setVisibility(View.GONE);
+//            holder.edit.setVisibility(View.VISIBLE);
+//        }
         holder.tvA.setVisibility(View.VISIBLE);
         holder.tvB.setVisibility(View.VISIBLE);
         holder.tvC.setVisibility(View.VISIBLE);
@@ -184,8 +180,39 @@ public class ExaminationSubmitAdapter extends PagerAdapter {
         holder.tvB.setText("B." + dataItems.get(position).getOptionB());
         holder.tvC.setText("C." + dataItems.get(position).getOptionC());
         holder.tvD.setText("D." + dataItems.get(position).getOptionD());
+        if(dataItems.get(position).getContent() != null){
+            holder.content.setVisibility(View.VISIBLE);
+            holder.content.setText(dataItems.get(position).getContent()+"("+dataItems.get(position).getPerScore()+"分)");
+        }else {
+            holder.content.setVisibility(View.GONE);
+        }
 
-        holder.question.setText(dataItems.get(position).getQuestionName());
+        if(dataItems.get(position).getCaseQuestion() != null){
+            holder.caseQuestion.setVisibility(View.VISIBLE);
+            holder.caseQuestion.setText("        "+dataItems.get(position).getCaseQuestion());
+            if(dataItems.get(position).getquestionType().equals("video")){
+                holder.caseQuestion.setVisibility(View.GONE);
+            }
+        }else {
+            holder.caseQuestion.setVisibility(View.GONE);
+        }
+
+        if (dataItems.get(position).getquestionType() != null){
+            if (dataItems.get(position).getquestionType().equals("case")){
+                holder.question.setText(dataItems.get(position).getQuestionName());
+                holder.mSuperPlayerView.setVisibility(View.GONE);
+            }else {
+                holder.mSuperPlayerView.setVisibility(View.VISIBLE);
+                SuperPlayerModel model = new SuperPlayerModel();
+                model.appId = 1300414804;// 配置 AppId
+                model.videoId = new SuperPlayerVideoId();
+                model.videoId.fileId = dataItems.get(position).getCaseQuestion(); // 配置 FileId
+                holder.mSuperPlayerView.playWithModel(model);
+            }
+        }
+
+
+        holder.question.setText(position+1+"."+dataItems.get(position).getQuestionName());
 
         holder.layoutA.setOnClickListener(new OnClickListener() {
             @Override
@@ -269,7 +296,8 @@ public class ExaminationSubmitAdapter extends PagerAdapter {
                             mContext.uploadExamination();
                             List<String> valuesList = new ArrayList<String>(mContext.resultlist.values());
 //                            Toast.makeText(mContext, valuesList.toString(), Toast.LENGTH_LONG).show();
-                            mContext.toUpload(mContext.token, RequestAnswerBean.toUpload(valuesList, ConstantData.answerId, mContext.stuid, mContext.score));
+                            mContext.toUpload(RequestAnswerBean.toUpload(valuesList, ConstantData.answerId, mContext.isRight,ConstantData.stuid, mContext.exam,mContext.score));
+
                             valuesList.clear();
                         }
                     });
@@ -371,11 +399,15 @@ public class ExaminationSubmitAdapter extends PagerAdapter {
         TextView tvC;
         TextView tvD;
         TextView tvE;
-        ImageView ivA_;
-        ImageView ivB_;
-        ImageView ivC_;
-        ImageView ivD_;
-        ImageView ivE_;
+        TextView content;
+        TextView caseQuestion;
+        SuperPlayerView mSuperPlayerView;
     }
+
+    public SuperPlayerView getVideo(){
+        ViewHolder holder = new ViewHolder();
+        return holder.mSuperPlayerView;
+    }
+
 
 }

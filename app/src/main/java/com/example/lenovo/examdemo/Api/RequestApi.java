@@ -1,28 +1,28 @@
 package com.example.lenovo.examdemo.Api;
 
-import com.example.lenovo.examdemo.Bean.QuestionBean;
-import com.example.lenovo.examdemo.Bean.RequestAnswerBean;
 import com.example.lenovo.examdemo.Bean.ResResult;
 import com.example.lenovo.examdemo.Bean.ResponseBean;
+import com.example.lenovo.examdemo.Bean.ResponseGradeBean;
+import com.example.lenovo.examdemo.Bean.ResponsePaperBean;
 import com.example.lenovo.examdemo.Bean.ResponseQuestionBean;
 import com.example.lenovo.examdemo.Bean.TimeBean;
 import com.example.lenovo.examdemo.Bean.TokenBean;
+
+import java.util.List;
 
 import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface RequestApi {
 
     @POST("user/sendsms")
     @FormUrlEncoded
-    Call<ResResult> sendsms(@Field("phone") String phone);
-
-    @POST("user/validatetoken")
-    @FormUrlEncoded
-    Call<ResResult> token(@Field("code") String code);
+    Observable<ResponseBean<TokenBean>> sendsms(@Field("phone") String phone);
 
     @POST("user/login")
     @FormUrlEncoded
@@ -32,15 +32,16 @@ public interface RequestApi {
     @FormUrlEncoded
     Observable<ResponseBean<TokenBean>> registe(@Field("param") String param);
 
-    @POST("user/getTime")
-    @FormUrlEncoded
-    Observable<ResponseBean<TimeBean>> getTime(@Field("param") String param);
-
-    @POST("getQuestion")
-    @FormUrlEncoded
-    Observable<ResponseBean<ResponseQuestionBean>> getQuestion( @Field("param") String param,@Field("token") String token);
-
     @POST("upload")
     @FormUrlEncoded
-    Observable<ResponseBean<TokenBean>> upload(@Field("token") String token, @Field("param") String param);
+    Observable<ResponseBean> upload(@Field("param") String param);
+
+    @GET ("getTime/{examName}/{stuId}")
+    Observable<ResponseBean<TimeBean>> getTime(@Path("examName") String examName, @Path("stuId") String stuId);
+
+    @GET ("getGradeByStuId/{stuId}")
+    Observable<ResponseBean<List<ResponseGradeBean>>> getGrade(@Path("stuId") String stuId);
+
+    @GET ("getPaperByExam/{examName}")
+    Observable<ResponseBean<ResponsePaperBean>> getPaper(@Path("examName") String examName);
 }

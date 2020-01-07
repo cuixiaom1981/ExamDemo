@@ -15,26 +15,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.lenovo.examdemo.Api.RequestApi;
-import com.example.lenovo.examdemo.Bean.GoLoginBean;
 import com.example.lenovo.examdemo.Bean.GoRegistBean;
-import com.example.lenovo.examdemo.Bean.GoTimeBean;
 import com.example.lenovo.examdemo.Bean.ResponseBean;
-import com.example.lenovo.examdemo.Bean.TimeBean;
 import com.example.lenovo.examdemo.Bean.TokenBean;
 import com.example.lenovo.examdemo.R;
-import com.example.lenovo.examdemo.Utils.PublicStatic;
+import com.example.lenovo.examdemo.Utils.ConstantData;
+import com.example.lenovo.examdemo.Utils.RetrofitManager;
 import com.google.gson.Gson;
 
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.OkHttpClient;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MessageActivity extends AppCompatActivity {
     private EditText message_password,message_password1,message_id;
@@ -45,10 +38,7 @@ public class MessageActivity extends AppCompatActivity {
     private int j = 0;
     private String stuid;
     private String phone;
-    private String token = "";
     private String telRegex = "[1][34578]\\d{9}";// 手机号正则表达式
-    //服务器base地址
-    public String BASE_URL = PublicStatic.SERVICE_HOST.concat(PublicStatic.API_URL);
     private RequestApi apiService;
 
     @Override
@@ -78,28 +68,9 @@ public class MessageActivity extends AppCompatActivity {
         Intent intent = getIntent();
         phone = intent.getExtras().getString("phone");
         message_user.setText(phone);
-        apiService = initRetrofit1().create(RequestApi.class);
+        apiService = RetrofitManager.getInstance().getRetrofit();
     }
 
-
-    //初始化retrofit 集成rxjava
-    public  Retrofit initRetrofit1(){
-        //http设置，可添加拦截器是实现http参数统一配置
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(3000, TimeUnit.SECONDS);//连接 超时时间
-        builder.writeTimeout(3000,TimeUnit.SECONDS);//写操作 超时时间
-        builder.readTimeout(3000,TimeUnit.SECONDS);//读操作 超时时间
-        builder.retryOnConnectionFailure(true);//错误重连
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .client(builder.build())
-                //添加rxjava支持
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        return retrofit;
-    }
 
     public class MyClick implements View.OnClickListener {
 
@@ -168,11 +139,10 @@ public class MessageActivity extends AppCompatActivity {
                     }
                     @Override
                     public void onNext(ResponseBean<TokenBean> resResult) {
-                        token = resResult.getData().getToken();
-//                        Toast.makeText(MessageActivity.this, resResult.getData().getToken(), Toast.LENGTH_LONG).show();
-//                        Toast.makeText(MessageActivity.this, resResult.getData()+"", Toast.LENGTH_LONG).show();
-                        stuid = message_id.getText().toString();
-                        Time(GoTimeBean.getTimeBean(stuid));
+                        ConstantData.token = resResult.getData().getToken();
+                        ConstantData.stuid = message_id.getText().toString();
+                        Intent intent = new Intent(MessageActivity.this,LocalActivity.class);
+                        startActivity(intent);
                     }
                     @Override
                     public void onError(Throwable e) {
@@ -188,49 +158,49 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     //获取倒计时接口
-    public void Time(GoTimeBean time) {
-        Gson gson = new Gson();
-        //通过gson转换成json字符串,调用login接口请求
-        apiService.getTime(gson.toJson(time)).
-                subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ResponseBean<TimeBean>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-                    @Override
-                    public void onNext(ResponseBean<TimeBean> resResult) {
-                        if (resResult.getResult()!=0){
-                            Toast.makeText(MessageActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
-                        }else {
-                            int time = (int) resResult.getData().getDuring() / 60;
-                            if (time > 0) {
-                                Intent intent = new Intent(MessageActivity.this, WaitingActivity.class);
-                                intent.putExtra("id", stuid);
-                                intent.putExtra("token", token);
-                                startActivity(intent);
-                            } else if (time <= 0 && time > -60) {
-                                Toast.makeText(MessageActivity.this, "考试已开始", Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(MessageActivity.this, AnalogyExaminationActivity.class);
-                                intent.putExtra("id", stuid);
-                                intent.putExtra("token", token);
-                                startActivity(intent);
-                            } else if (time < -90) {
-                                Toast.makeText(MessageActivity.this, "考试已结束", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    }
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("login", "onFailure: " + e.getMessage());
-                    }
-
-                    @Override
-                    public void onComplete() {
-                    }
-
-                });
-    }
+//    public void Time(TimeBean time) {
+//        Gson gson = new Gson();
+//        //通过gson转换成json字符串,调用login接口请求
+//        apiService.getTime(gson.toJson(time)).
+//                subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Observer<ResponseBean<TimeBean>>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                    }
+//                    @Override
+//                    public void onNext(ResponseBean<TimeBean> resResult) {
+//                        if (resResult.getResult()!=0){
+//                            Toast.makeText(MessageActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
+//                        }else {
+//                            int time = (int) resResult.getData().getDuring() / 60;
+//                            if (time > 0) {
+//                                Intent intent = new Intent(MessageActivity.this, WaitingActivity.class);
+//                                intent.putExtra("id", stuid);
+//                                intent.putExtra("token", token);
+//                                startActivity(intent);
+//                            } else if (time <= 0 && time > -60) {
+//                                Toast.makeText(MessageActivity.this, "考试已开始", Toast.LENGTH_LONG).show();
+//                                Intent intent = new Intent(MessageActivity.this, AnalogyExaminationActivity.class);
+//                                intent.putExtra("id", stuid);
+//                                intent.putExtra("token", token);
+//                                startActivity(intent);
+//                            } else if (time < -90) {
+//                                Toast.makeText(MessageActivity.this, "考试已结束", Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//                    }
+//                    @Override
+//                    public void onError(Throwable e) {
+//                        Log.e("login", "onFailure: " + e.getMessage());
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//                    }
+//
+//                });
+//    }
 
     // 初始化标题栏
     private void initToolbar() {

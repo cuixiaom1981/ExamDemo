@@ -3,6 +3,7 @@ package com.example.lenovo.examdemo.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Message;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,30 +18,29 @@ import android.widget.Toast;
 
 
 import com.example.lenovo.examdemo.Api.RequestApi;
+import com.example.lenovo.examdemo.Bean.BaseObserver;
 import com.example.lenovo.examdemo.Bean.GoLoginBean;
 import com.example.lenovo.examdemo.Bean.GoTimeBean;
+import com.example.lenovo.examdemo.Bean.ProgressListener;
 import com.example.lenovo.examdemo.Bean.ResResult;
 import com.example.lenovo.examdemo.Bean.ResponseBean;
+import com.example.lenovo.examdemo.Bean.ResponseCallBack;
 import com.example.lenovo.examdemo.Bean.TimeBean;
 import com.example.lenovo.examdemo.Bean.TokenBean;
 import com.example.lenovo.examdemo.R;
-import com.example.lenovo.examdemo.Utils.PublicStatic;
+import com.example.lenovo.examdemo.Utils.ConstantData;
+import com.example.lenovo.examdemo.Utils.RetrofitManager;
 import com.example.lenovo.examdemo.Utils.ShapeLoadingDialog;
 import com.google.gson.Gson;
 
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -52,20 +52,16 @@ public class LoginActivity extends AppCompatActivity {
     private ShapeLoadingDialog shapeLoadingDialog;// 网络请求弹出窗
     private String telRegex = "[1][34578]\\d{9}";// 手机号正则表达式
     public static LoginActivity loginActivity;
-    //服务器base地址
-    public String BASE_URL = PublicStatic.SERVICE_HOST.concat(PublicStatic.API_URL);
     private RequestApi apiService;
 
     private String phone = "";
-    private String stuid = "";
-    private String token = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        apiService = initRetrofit().create(RequestApi.class);
+        apiService = RetrofitManager.getInstance().getRetrofit();
         loginActivity = LoginActivity.this;
         initToolbar();// 初始化标题栏
         initView();//控件初始化
@@ -96,34 +92,6 @@ public class LoginActivity extends AppCompatActivity {
         tv_getnum.setOnClickListener(myClick);
         btn_login.setOnClickListener(myClick);
         login_type.setOnClickListener(myClick);
-    }
-
-    //初始化retrofit
-    public Retrofit initRetrofit(){
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        return retrofit;
-    }
-
-    //初始化retrofit 集成rxjava
-    public  Retrofit initRetrofit1(){
-        //http设置，可添加拦截器是实现http参数统一配置
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(3000, TimeUnit.SECONDS);//连接 超时时间
-        builder.writeTimeout(3000,TimeUnit.SECONDS);//写操作 超时时间
-        builder.readTimeout(3000,TimeUnit.SECONDS);//读操作 超时时间
-        builder.retryOnConnectionFailure(true);//错误重连
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .client(builder.build())
-                //添加rxjava支持
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        return retrofit;
     }
 
     // 控件监听事件
@@ -209,50 +177,133 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-
-    //发送验证短信
-    public void sendsms(){
-        //3.接口服务对象调用接口中方法，获得Call对象
-        Call<ResResult> call = apiService.sendsms(et_num.getText().toString());
-        //同步请求
-        //Response<ResponseBody> bodyResponse = call.execute();
-
-        //4.Call对象执行请求（异步、同步请求）
-        call.enqueue(new Callback<ResResult>() {
-            @Override
-            public void onResponse(Call<ResResult> call, Response<ResResult> response) {
-                //onResponse方法是运行在主线程也就是UI线程的，所以我们可以在这里直接更新ui
-                if (response.isSuccessful()) {
-                    try {
-                        int result = response.body().getResult();
-                        if (result == 0){
-                            Snackbar bar = Snackbar.make(findViewById(R.id.activity_login), "验证码已发送请注意查收", Snackbar.LENGTH_SHORT);
-                            View v1 = bar.getView();
-                            v1.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.snackbarcolor));
-                            bar.show();
-                            Timer();
-                        }else {
-                            String errMsg=response.body().getErrMsg();
-                            Snackbar bar = Snackbar.make(findViewById(R.id.activity_login), errMsg, Snackbar.LENGTH_SHORT);
-                            View v1 = bar.getView();
-                            v1.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.snackbarcolor));
-                            bar.show();
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
+    //发送验证码
+    public void sendsms() {
+        apiService.sendsms(et_num.getText().toString()).
+                subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<ResponseBean<TokenBean>>(new ResponseCallBack<TokenBean>() {
+                    public void onSuccess(TokenBean t) {
+                        Snackbar bar = Snackbar.make(findViewById(R.id.activity_login), "验证码已发送请注意查收", Snackbar.LENGTH_SHORT);
+                        View v1 = bar.getView();
+                        v1.setBackgroundColor(ContextCompat.getColor(LoginActivity.this, R.color.snackbarcolor));
+                        bar.show();
+                        Timer();
                     }
-                }
-            }
+                    @Override
+                    public void onLogin() {
+                    }
+                    @Override
+                    public void onFault(String errorMsg) {
+                        Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
 
-            @Override
-            public void onFailure(Call<ResResult> call, Throwable t) {
-                Log.e("sendsms", "onFailure: " + t.getMessage());
-            }
-        });
+                    }}, new ProgressListener() {
+                    @Override
+                    public void startProgress() {
+                        Toast.makeText(getApplicationContext(), "短信验证码发送中", Toast.LENGTH_LONG).show();
+                    }
+                    @Override
+                    public void cancelProgress() {
+                        // Toast.makeText(getApplicationContext(), "获取倒计时已取消", Toast.LENGTH_LONG).show();
+                    }
+                }));
     }
+
+    //登录
+//    public void login(GoLoginBean user) {
+//        apiService = RetrofitManager.getInstance().getRetrofit();
+//        Gson gson = new Gson();
+//        //通过gson转换成json字符串,调用login接口请求
+//        apiService.login(gson.toJson(user)).
+//                subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new BaseObserver<ResponseBean<TokenBean>>(new ResponseCallBack<ResponseBean<TokenBean>>() {
+//                    @Override
+//                    public void onSuccess(ResponseBean<TokenBean> resResult) {
+//                        if (resResult.getResult()!=0){
+//                            Toast.makeText(LoginActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
+//                        }else {
+//                            if (resResult.getData().isNew()) {
+//                                phone = et_num.getText().toString();
+//                                Intent intent = new Intent(LoginActivity.this, MessageActivity.class);
+//                                intent.putExtra("phone", phone);
+//                                startActivity(intent);
+//                            } else {
+//                                ConstantData.token = resResult.getData().getToken();
+//                                stuid = resResult.getData().getStuId();
+//                                Intent intent = new Intent(LoginActivity.this,LocalActivity.class);
+//                                intent.putExtra("stuid",stuid);
+//                                startActivity(intent);
+//                            }
+//                        }
+//
+//                    }
+//                    @Override
+//                    public void onLogin() {
+//                        Intent intent = new Intent(LoginActivity.this, LoginActivity.class);
+//                        startActivity(intent);
+//                        Toast.makeText(getApplicationContext(), "请重新登录", Toast.LENGTH_LONG).show();
+//                    }
+//                    @Override
+//                    public void onFault(String errorMsg) {
+//                        Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
+//
+//                    }}, new ProgressListener() {
+//                    @Override
+//                    public void startProgress() {
+//                        Toast.makeText(getApplicationContext(), "登录中", Toast.LENGTH_LONG).show();
+//                    }
+//
+//                    @Override
+//                    public void cancelProgress() {
+//                        // Toast.makeText(getApplicationContext(), "获取倒计时已取消", Toast.LENGTH_LONG).show();
+//                    }
+//                }));
+//    }
+
+//    public void login(GoLoginBean user) {
+//        Gson gson = new Gson();
+//        //通过gson转换成json字符串,调用login接口请求
+//        apiService.login(gson.toJson(user)).
+//                subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Observer<ResponseBean<TokenBean>>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                    }
+//                    @Override
+//                    public void onNext(ResponseBean<TokenBean> resResult) {
+//                        if (resResult.getResult()!=0){
+//                            Toast.makeText(LoginActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
+//                        }else {
+//                            if (resResult.getData().isNew()) {
+//                                phone = et_num.getText().toString();
+//                                Intent intent = new Intent(LoginActivity.this, MessageActivity.class);
+//                                intent.putExtra("phone", phone);
+//                                startActivity(intent);
+//                            } else {
+//                                ConstantData.token = resResult.getData().getToken();
+//                                stuid = resResult.getData().getStuId();
+//                                Intent intent = new Intent(LoginActivity.this, LocalActivity.class);
+//                                intent.putExtra("id", stuid);
+//                                startActivity(intent);
+//                            }
+//                        }
+//
+//                    }
+//                    @Override
+//                    public void onError(Throwable e) {
+//                        Log.e("login", "onFailure: " + e.getMessage());
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//                    }
+//
+//                });
+//    }
+
     public void login(GoLoginBean user) {
-        apiService = initRetrofit1().create(RequestApi.class);
         Gson gson = new Gson();
         //通过gson转换成json字符串,调用login接口请求
         apiService.login(gson.toJson(user)).
@@ -273,61 +324,13 @@ public class LoginActivity extends AppCompatActivity {
                                 intent.putExtra("phone", phone);
                                 startActivity(intent);
                             } else {
-                                token = resResult.getData().getToken();
-                                stuid = resResult.getData().getStuId();
-                                Time(GoTimeBean.getTimeBean(stuid));
+                                ConstantData.token = resResult.getData().getToken();
+                                ConstantData.stuid = resResult.getData().getStuId();
+                                Intent intent = new Intent(LoginActivity.this, LocalActivity.class);
+                                startActivity(intent);
                             }
                         }
 
-                    }
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("login", "onFailure: " + e.getMessage());
-                    }
-
-                    @Override
-                    public void onComplete() {
-                    }
-
-                });
-    }
-
-    //获取倒计时接口
-    public void Time(GoTimeBean time) {
-        apiService = initRetrofit1().create(RequestApi.class);
-        Gson gson = new Gson();
-        //通过gson转换成json字符串,调用login接口请求
-        apiService.getTime(gson.toJson(time)).
-                subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ResponseBean<TimeBean>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-                    @Override
-                    public void onNext(ResponseBean<TimeBean> resResult) {
-                        if (resResult.getResult()!=0){
-                            Toast.makeText(LoginActivity.this, resResult.getErrMsg()+"", Toast.LENGTH_LONG).show();
-                        }else {
-                            if (resResult.getData().getSubmit()) {
-                                Toast.makeText(LoginActivity.this, "您已提交试卷", Toast.LENGTH_LONG).show();
-                            } else {
-                                int time = (int) resResult.getData().getDuring() / 60;
-                                if (time > 0) {
-                                    Intent intent = new Intent(LoginActivity.this, WaitingActivity.class);
-                                    intent.putExtra("id", stuid);
-                                    intent.putExtra("token", token);
-                                    startActivity(intent);
-                                } else if (time <= 0 && time > -60) {
-                                    Intent intent = new Intent(LoginActivity.this, AnalogyExaminationActivity.class);
-                                    intent.putExtra("id", stuid);
-                                    intent.putExtra("token", token);
-                                    startActivity(intent);
-                                } else if (time < -90) {
-                                    Toast.makeText(LoginActivity.this, "考试已结束", Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        }
                     }
                     @Override
                     public void onError(Throwable e) {
