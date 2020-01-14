@@ -19,10 +19,10 @@ public class RetrofitManager {
     //token换成获取本地token的方法
 //    private String token="eyJhbGciOiJIUzUxMiJ9.eyJtb2RlIjoicGFzc3dvcmQiLCJzdWIiOiIxODk0NjEwNDAzMiIsImlzcyI6ImN1aSIsImV4cCI6MTU3ODczNTQxMiwiaWF0IjoxNTc4MTMwNjEyLCJyb2wiOiJzdHUifQ.72YEZHT0seJAketMd6fuAYXkNJ5D27veMASGc9UljgEg58Y9hfUfHaz4HfYRH9YBMuUAOg56Iv_9dSUlr_o4WA";
     public static synchronized RetrofitManager getInstance(){//synchronized线程锁
-        //单例
-        if (retrofitManager == null){
+//        //单例
+//        if (retrofitManager == null){
             retrofitManager = new RetrofitManager();
-        }
+//        }
         return retrofitManager;
     }
     private RetrofitManager(){

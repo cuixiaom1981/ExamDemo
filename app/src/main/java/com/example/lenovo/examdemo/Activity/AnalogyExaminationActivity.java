@@ -367,7 +367,11 @@ public class AnalogyExaminationActivity extends Activity {
 		confirm_btn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				finish();
+				clearData();
+				Intent intent = new Intent(AnalogyExaminationActivity.this,MainActivity.class);
+				startActivity(intent);
+//				finish();
+//				Toast.makeText(AnalogyExaminationActivity.this, ConstantData.token, Toast.LENGTH_LONG).show();
 				builder.dismiss();
 			}
 		});
@@ -606,4 +610,19 @@ public class AnalogyExaminationActivity extends Activity {
 
 				});
 	}
+	//清理ConstantData
+	public void clearData(){
+		ConstantData.answerName.clear();
+		ConstantData.answerOptionA.clear();
+		ConstantData.answerOptionB.clear();
+		ConstantData.answerOptionC.clear();
+		ConstantData.answerOptionD.clear();
+		ConstantData.rightAnswer.clear();
+		ConstantData.answerId.clear();
+		ConstantData.Content.clear();
+		ConstantData.caseQuestion.clear();
+		ConstantData.perScore.clear();
+		ConstantData.questionType.clear();
+	}
+
 }
