@@ -138,7 +138,7 @@ public class LoginPasswordActivity extends AppCompatActivity {
                         } else {
                             ConstantData.token = resResult.getData().getToken();
                             ConstantData.stuid = resResult.getData().getStuId();
-                            Intent intent = new Intent(LoginPasswordActivity.this, LocalActivity.class);
+                            Intent intent = new Intent(LoginPasswordActivity.this, MainActivity.class);
                             startActivity(intent);
                         }
                     }

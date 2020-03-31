@@ -204,7 +204,8 @@ public class WaitingActivity extends AppCompatActivity {
                                 startActivity(intent);
                             } else if (time <= -90) {
 //                            department.setVisibility(View.GONE);
-                                duration.setText("0");
+                                duration.setVisibility(View.GONE);
+                                text.setText("考试已结束");
                                 Toast.makeText(WaitingActivity.this, "考试已结束", Toast.LENGTH_LONG).show();
                             }
                         }

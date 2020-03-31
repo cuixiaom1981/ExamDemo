@@ -1,17 +1,14 @@
 package com.example.lenovo.examdemo.Api;
 
-import com.example.lenovo.examdemo.Bean.ResResult;
 import com.example.lenovo.examdemo.Bean.ResponseBean;
 import com.example.lenovo.examdemo.Bean.ResponseGradeBean;
 import com.example.lenovo.examdemo.Bean.ResponsePaperBean;
-import com.example.lenovo.examdemo.Bean.ResponseQuestionBean;
 import com.example.lenovo.examdemo.Bean.TimeBean;
 import com.example.lenovo.examdemo.Bean.TokenBean;
 
 import java.util.List;
 
 import io.reactivex.Observable;
-import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -41,6 +38,9 @@ public interface RequestApi {
 
     @GET ("getGradeByStuId/{stuId}")
     Observable<ResponseBean<List<ResponseGradeBean>>> getGrade(@Path("stuId") String stuId);
+
+//    @GET ("getGradeByStuId/{stuId}")
+//    Observable<ResponseBean<List<ResponseGradeBean>>> getGrade(@Header("Authorization")String token1, @Path("stuId") String stuId);
 
     @GET ("getPaperByExam/{examName}")
     Observable<ResponseBean<ResponsePaperBean>> getPaper(@Path("examName") String examName);

@@ -83,7 +83,7 @@ public class AnalogyExaminationActivity extends Activity {
 	public Map<Integer,String> resultlist = new HashMap<Integer,String>();
 	Timer timer;
 	TimerTask timerTask;
-	int minute = 90;
+	int minute = 30;
 	int second = 0;
 
 	boolean isPause = false;
@@ -371,9 +371,10 @@ public class AnalogyExaminationActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				clearData();
+//                finish();
 				Intent intent = new Intent(AnalogyExaminationActivity.this,MainActivity.class);
 				startActivity(intent);
-//				finish();
+//				onDestroy();
 //				Toast.makeText(AnalogyExaminationActivity.this, ConstantData.token, Toast.LENGTH_LONG).show();
 				builder.dismiss();
 			}
@@ -591,7 +592,7 @@ public class AnalogyExaminationActivity extends Activity {
 
 								@Override
 								public void onClick(DialogInterface dialogInterface, int i) {
-									Intent intent = new Intent(AnalogyExaminationActivity.this,LocalActivity.class);
+									Intent intent = new Intent(AnalogyExaminationActivity.this,MainActivity.class);
 									startActivity(intent);
 								}
 							});

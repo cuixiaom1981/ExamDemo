@@ -20,9 +20,9 @@ public class RetrofitManager {
 //    private String token="eyJhbGciOiJIUzUxMiJ9.eyJtb2RlIjoicGFzc3dvcmQiLCJzdWIiOiIxODk0NjEwNDAzMiIsImlzcyI6ImN1aSIsImV4cCI6MTU3ODczNTQxMiwiaWF0IjoxNTc4MTMwNjEyLCJyb2wiOiJzdHUifQ.72YEZHT0seJAketMd6fuAYXkNJ5D27veMASGc9UljgEg58Y9hfUfHaz4HfYRH9YBMuUAOg56Iv_9dSUlr_o4WA";
     public static synchronized RetrofitManager getInstance(){//synchronized线程锁
 //        //单例
-        if (retrofitManager == null){
+//        if (retrofitManager == null){
             retrofitManager = new RetrofitManager();
-        }
+//        }
         return retrofitManager;
     }
     private RetrofitManager(){
@@ -42,7 +42,7 @@ public class RetrofitManager {
          .writeTimeout(3000,TimeUnit.SECONDS)//写操作 超时时间
          .readTimeout(3000,TimeUnit.SECONDS)//读操作 超时时间
          .retryOnConnectionFailure(false)//错误不重连
-        .addInterceptor(tokenInterceptor);//添加token拦截器
+        .addNetworkInterceptor(tokenInterceptor);//添加token拦截器
          retrofit = new Retrofit.Builder()
                 .client(builder.build())
                  .baseUrl(BASE_URL)
@@ -56,12 +56,16 @@ public class RetrofitManager {
         @Override
         public okhttp3.Response intercept(Chain chain) throws IOException {
             Request originalRequest = chain.request();//获取原始请求
-            Request.Builder requestBuilder = originalRequest.newBuilder() //建立新的请求
-                    //token换成获取本地token的方法
-                    .addHeader("Authorization", ConstantData.token)
-                    .method(originalRequest.method(), originalRequest.body());
-            return chain.proceed(requestBuilder.build()); //重新请求
-        }};
+            String token1 = originalRequest.header("Authorization");
+            if (token1 == null || token1.equals("")) {
+                Request.Builder requestBuilder = originalRequest.newBuilder() //建立新的请求
+                        //token换成获取本地token的方法
+                        .addHeader("Authorization", ConstantData.token)
+                        .method(originalRequest.method(), originalRequest.body());
+                return chain.proceed(requestBuilder.build()); //重新请求
+            } else return chain.proceed(originalRequest);
+        }
+    };
     public <T> T createReq(Class<T> reqServer){
         return retrofit.create(reqServer);
     }

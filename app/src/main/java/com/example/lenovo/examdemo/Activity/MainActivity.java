@@ -64,6 +64,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        // TODO Auto-generated method stub
+//        ExamMessage(ConstantData.stuid);
+        super.onResume();
+    }
+
     // 初始化标题栏
     private void initToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);// 初始化标题栏
