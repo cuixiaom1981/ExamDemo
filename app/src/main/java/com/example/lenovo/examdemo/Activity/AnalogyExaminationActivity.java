@@ -353,7 +353,10 @@ public class AnalogyExaminationActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (backtype.equals("0")) {
-					finish();
+//                                      finish();
+					clearData();
+				        Intent intent = new Intent(AnalogyExaminationActivity.this,MainActivity.class);
+				        startActivity(intent);
 					builder.dismiss();
 				} else {
 					isPause = false;
