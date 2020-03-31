@@ -141,7 +141,7 @@ public class MessageActivity extends AppCompatActivity {
                     public void onNext(ResponseBean<TokenBean> resResult) {
                         ConstantData.token = resResult.getData().getToken();
                         ConstantData.stuid = message_id.getText().toString();
-                        Intent intent = new Intent(MessageActivity.this,LocalActivity.class);
+                        Intent intent = new Intent(MessageActivity.this,MainActivity.class);
                         startActivity(intent);
                     }
                     @Override
